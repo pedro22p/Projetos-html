@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Portal Topzera</title>
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/1055/1055687.png" type="image/png">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: Arial; background: #1e1e1e; color: #fff; text-align: center; padding: 20px; }
+    input, button { padding:10px; margin:5px; border-radius:5px; border:none; }
+    button { background:#00cc66; cursor:pointer; color:#fff; }
+    button:hover { background:#009944; }
+    nav { margin:20px 0; display:none; }
+    nav button { background:#444; }
+    nav button:hover { background:#666; }
+    #conteudo { margin-top:20px; padding:20px; border:1px solid #555; border-radius:10px; background:#2e2e2e; text-align:left; max-width:800px; margin-left:auto; margin-right:auto; }
+    #login, #menu, #conteudo { width:100%; max-width:400px; margin:auto; }
+    #login input { width: 90%; }
+    ul { list-style: none; padding-left:0; }
+    li { margin-bottom:8px; }
+    img.mem { max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0; }
+  </style>
+</head>
+<body>
+
+<h1>Portal Topzera</h1>
+
+<div id="login">
+  <input type="text" id="email" placeholder="Email"><br>
+  <input type="password" id="senha" placeholder="Senha"><br>
+  <button onclick="fazerLogin()">Entrar</button>
+  <h3 id="msg"></h3>
+</div>
+
+<nav id="menu">
+  <button onclick="mostrar('gamer')">📰 Notícias Gamer</button>
+  <button onclick="mostrar('prog')">💻 Programação</button>
+  <button onclick="mostrar('hack')">🛡️ Hacking</button>
+  <button onclick="mostrar('anime')">📺 Animes</button>
+  <button onclick="mostrar('memes')">😂 Memes</button>
+  <button onclick="mostrar('clima')">🌦️ Clima</button>
+</nav>
+
+<div id="conteudo"></div>
+
+<script>
+function fazerLogin() {
+  const email = emailEl.value.trim(), senha = senhaEl.value.trim();
+  if (email && senha) {
+    loginDiv.style.display = 'none';
+    menu.style.display = 'block';
+    mostrar('gamer');
+  } else {
+    msg.innerText = 'Preencha email e senha!';
+  }
+}
+
+async function mostrar(aba) {
+  let html = '';
+  if (aba === 'gamer') {
+    html = '<h2>📰 Notícias Gamer</h2><ul>';
+    try {
+      const r = await fetch('https://api.allorigins.win/raw?url=https://www.thegamer.com/feed/');
+      const xml = await r.text();
+      const doc = new DOMParser().parseFromString(xml, 'application/xml');
+      [...doc.querySelectorAll('item')].slice(0,20).forEach(it => {
+        const t = it.querySelector('title').textContent;
+        const l = it.querySelector('link').textContent;
+        html += `<li><a href="${l}" target="_blank">${t}</a></li>`;
+      });
+      html += '</ul>';
+    } catch(e) {
+      html = '<p>Erro ao carregar notícias.</p>';
+    }
+  }
+  else if (aba === 'prog') {
+    html = `<h2>💻 Dicas de Programação</h2><ul>
+      <li>Use async/await para chamadas API.</li>
+      <li>Faça commits com mensagens claras.</li>
+      <li>Use console.log ou debugs.</li>
+      <li>Mantenha estilo consistente no código.</li>
+    </ul>`;
+  }
+  else if (aba === 'hack') {
+    html = `<h2>🛡️ Dicas de Hacking (Ethical)</h2><ul>
+      <li>Estude TCP/IP, DNS e redes.</li>
+      <li>Conheça OWASP Top 10.</li>
+      <li>Use Nmap e Wireshark.</li>
+    </ul>`;
+  }
+  else if (aba === 'anime') {
+    html = `<h2>📺 Animes Recomendados</h2><ul>
+      <li>Attack on Titan</li>
+      <li>Fullmetal Alchemist: Brotherhood</li>
+      <li>Jujutsu Kaisen</li>
+      <li>Demon Slayer</li>
+    </ul>`;
+  }
+  else if (aba === 'memes') {
+    html = `<h2>😂 Memes de Programação</h2>
+    <img class="mem" src="https://i.redd.it/cwffohb5lkr91.jpg" alt="meme1">
+    <img class="mem" src="https://i.redd.it/1t5yqy7x2xq91.jpg" alt="meme2">`;
+  }
+  else if (aba === 'clima') {
+    html = `<h2>🌦️ Clima Atual</h2><p id="wx">Pegando sua localização...</p>`;
+  }
+  conteudo.innerHTML = html;
+  if (aba === 'clima') mostrarClima();
+}
+
+async function mostrarClima() {
+  const wx = document.getElementById('wx');
+  if (!navigator.geolocation) {
+    wx.innerText = 'Geolocalização não suportada.';
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const { latitude, longitude } = pos.coords;
+    try {
+      const resp = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+      const d = await resp.json();
+      wx.innerText = `🌡️ ${d.current_weather.temperature}°C  💨 ${d.current_weather.windspeed} km/h`;
+    } catch {
+      wx.innerText = 'Erro ao obter clima.';
+    }
+  }, () => {
+    wx.innerText = 'Permita localização para ver o clima.';
+  });
+}
+
+/* shortcuts */
+const emailEl = document.getElementById('email');
+const senhaEl = document.getElementById('senha');
+const loginDiv = document.getElementById('login');
+const menu = document.getElementById('menu');
+const conteudo = document.getElementById('conteudo');
+const msg = document.getElementById('msg');
+</script>
+
+</body>
+</html>
