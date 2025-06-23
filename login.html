@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Login com botão que foge aleatório</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #282c34;
+    color: white;
+    display: flex;
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .login-container {
+    background: #3b3f46;
+    padding: 30px;
+    border-radius: 8px;
+    width: 320px;
+    position: relative;
+    height: 280px; /* altura fixa para limitar o movimento do botão */
+  }
+
+  label {
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  input[type="email"],
+  input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+
+  button {
+    padding: 12px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 4px;
+    background: #61dafb;
+    color: #000;
+    cursor: pointer;
+
+    position: absolute; /* para poder mover pelo top e left */
+    transition: top 0.3s ease, left 0.3s ease;
+  }
+
+  .message {
+    margin-top: 10px;
+    color: #f88;
+    height: 18px;
+  }
+</style>
+</head>
+<body>
+  <div class="login-container" id="container">
+    <label for="email">Email:</label>
+    <input type="email" id="email" placeholder="Digite seu email" />
+
+    <label for="senha">Senha:</label>
+    <input type="password" id="senha" placeholder="Digite sua senha" />
+
+    <button id="btnLogin" style="top: 210px; left: 100px;">Entrar</button>
+
+    <div class="message" id="message"></div>
+  </div>
+
+<script>
+  const btnLogin = document.getElementById('btnLogin');
+  const emailInput = document.getElementById('email');
+  const senhaInput = document.getElementById('senha');
+  const message = document.getElementById('message');
+  const container = document.getElementById('container');
+
+  // Posição fixa padrão do botão quando está liberado (login ok)
+  const fixedPosition = { top: 210, left: 100 };
+
+  function randomPosition() {
+    const containerRect = container.getBoundingClientRect();
+    const btnRect = btnLogin.getBoundingClientRect();
+
+    // Como o botão tem position absolute dentro do container, vamos usar o tamanho do container para calcular limites
+
+    // Limites máximos para left e top para o botão não sair do container
+    const maxLeft = container.clientWidth - btnLogin.offsetWidth;
+    const maxTop = container.clientHeight - btnLogin.offsetHeight;
+
+    // Gera valores aleatórios dentro dos limites
+    const left = Math.floor(Math.random() * maxLeft);
+    const top = Math.floor(Math.random() * maxTop);
+
+    return { left, top };
+  }
+
+  btnLogin.addEventListener('mouseenter', () => {
+    const email = emailInput.value.trim();
+    const senha = senhaInput.value.trim();
+
+    if (email === '' || senha === '') {
+      // Botão foge para posição aleatória
+      const pos = randomPosition();
+      btnLogin.style.left = pos.left + 'px';
+      btnLogin.style.top = pos.top + 'px';
+      message.textContent = 'Preencha email e senha para entrar!';
+    } else {
+      // Botão volta pro lugar fixo
+      btnLogin.style.left = fixedPosition.left + 'px';
+      btnLogin.style.top = fixedPosition.top + 'px';
+      message.textContent = '';
+    }
+  });
+
+  btnLogin.addEventListener('click', () => {
+    const email = emailInput.value.trim();
+    const senha = senhaInput.value.trim();
+
+    if (email === '' || senha === '') {
+      message.textContent = 'Preencha email e senha!';
+      return;
+    }
+
+    message.textContent = 'Login feito com sucesso!';
+    btnLogin.style.left = fixedPosition.left + 'px';
+    btnLogin.style.top = fixedPosition.top + 'px';
+    // Aqui pode ter a lógica real de login
+  });
+
+  // Quando usuário digitar nos inputs, limpa mensagem e posiciona botão fixo
+  emailInput.addEventListener('input', () => {
+    if (emailInput.value.trim() !== '' && senhaInput.value.trim() !== '') {
+      btnLogin.style.left = fixedPosition.left + 'px';
+      btnLogin.style.top = fixedPosition.top + 'px';
+      message.textContent = '';
+    }
+  });
+
+  senhaInput.addEventListener('input', () => {
+    if (emailInput.value.trim() !== '' && senhaInput.value.trim() !== '') {
+      btnLogin.style.left = fixedPosition.left + 'px';
+      btnLogin.style.top = fixedPosition.top + 'px';
+      message.textContent = '';
+    }
+  });
+</script>
+</body>
+</html>
